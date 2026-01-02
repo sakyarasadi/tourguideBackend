@@ -1,0 +1,45 @@
+What is this chatbot?
+This is an AI-powered chatbot built with Flask, LangChain, and LangGraph. It uses RAG (Retrieval-Augmented Generation) to provide accurate answers based on a knowledge base.
+
+How does RAG work?
+RAG combines retrieval and generation. When you ask a question, the bot searches a knowledge base using semantic similarity (FAISS + embeddings), retrieves relevant documents, and uses them as context for the LLM to generate an accurate answer.
+
+What technologies are used?
+The bot uses Flask for the web framework, LangChain and LangGraph for the agent workflow, Google Gemini as the LLM, FAISS for vector search, Sentence Transformers for embeddings, Redis for session management, and MongoDB for persistent storage.
+
+How do I customize the bot?
+You can customize the bot by: 1) Editing the SYSTEM_PROMPT in bot_service.py to change personality, 2) Adding custom tools in the tools/ directory, 3) Modifying the knowledge base by updating knowledge.txt and rebuilding, 4) Changing API endpoints in api/bot_routes.py, 5) Adjusting configuration in config.py or .env file.
+
+What is the ReAct pattern?
+ReAct (Reasoning + Acting) is an agent pattern where the LLM alternates between reasoning about what to do and taking actions (using tools). The workflow is: Thought → Action → Observation → repeat until Final Answer. This allows the bot to use tools intelligently to gather information before responding.
+
+How do I add a custom tool?
+To add a custom tool: 1) Create a new file in tools/ directory, 2) Use the @tool decorator from langchain_core.tools, 3) Write a comprehensive docstring explaining when to use the tool, 4) Implement your business logic with proper error handling, 5) Import and add it to DEFAULT_TOOLS in services/agent_workflow.py.
+
+What databases are required?
+The bot requires two databases: MongoDB for persistent message storage and analytics, and Redis for fast session management and conversation history caching. Both can be local or cloud-hosted.
+
+How does conversation history work?
+Conversation history is stored in two places: Redis for fast access during conversations (with TTL), and MongoDB for permanent storage. The bot uses a sliding window approach, keeping only the last N messages in context to manage token limits. Long conversations are automatically summarized.
+
+What is FAISS?
+FAISS (Facebook AI Similarity Search) is a library for efficient similarity search of dense vectors. In this bot, it's used to quickly find the most relevant documents from the knowledge base by comparing embedding vectors.
+
+How do I deploy this bot?
+You can deploy using Docker, traditional hosting, or cloud platforms. Key steps: 1) Set FLASK_ENV=production, 2) Use a production WSGI server (Gunicorn or Waitress), 3) Configure proper MongoDB and Redis instances, 4) Set up SSL/TLS, 5) Configure environment variables securely, 6) Set up monitoring and backups.
+
+What is the purpose of the repository layer?
+The repository layer provides an abstraction over data access. It handles all database operations (Redis and MongoDB) and provides a clean interface for the service layer. This separation makes the code more maintainable and testable.
+
+How does credential redaction work?
+The bot automatically redacts sensitive information like passwords, API keys, and tokens before logging or storing messages. It uses regex patterns to identify and replace sensitive data with ****** to prevent accidental exposure in logs or databases.
+
+Can I use a different LLM?
+Yes! The bot is designed to work with any LangChain-compatible LLM. To change the LLM, modify the ChatGoogleGenerativeAI initialization in agent_workflow.py to use a different provider (OpenAI, Anthropic, etc.) and update the configuration accordingly.
+
+What is the session TTL?
+Session TTL (Time To Live) determines how long conversation history is kept in Redis before expiring. The default is 24 hours (86400 seconds). After this time, the session is automatically deleted to save memory. You can adjust this in the SESSION_TTL_SECONDS configuration.
+
+How do I test the API?
+You can test the API using curl, Postman, or any HTTP client. The main endpoints are: GET /health for health check, GET /api/bot for bot info, POST /api/bot for sending messages. See the API Documentation section in README.md for detailed examples.
+
